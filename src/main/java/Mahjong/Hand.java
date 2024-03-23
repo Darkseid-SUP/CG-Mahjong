@@ -23,10 +23,93 @@ public class Hand {
     }
 
     public boolean isFormat(List<Tile> vec) {
-        if (vec.size() == 0) {
-            return true;
-        } else if (vec.size() < 3 || vec.size() % 3 != 0) {
-            return false;
+        Scanner scanner = StringUtils.join(listile, "");
+        String line = scanner.nextLine().replace(" ", "");
+        List<Integer> hand = new ArrayList<>();
+        List<Integer> temp = new ArrayList<>();
+        for (char c : line.toCharArray()) {
+            if (c == 'm') {
+                hand.addAll(temp);
+                temp.clear();
+            } else if (c == 'p') {
+                for (int i : temp) {
+                    hand.add(i + 10);
+                }
+                temp.clear();
+            } else if (c == 's') {
+                for (int i : temp) {
+                    hand.add(i + 20);
+                }
+                temp.clear();
+            } else if (c == 'z') {
+                for (int i : temp) {
+                    hand.add(i * 100);
+                }
+                temp.clear();
+            } else {
+                temp.add(Character.getNumericValue(c));
+            }
+        }
+        hand.sort(null);
+        String f = "FALSE";
+        String t = "TRUE";
+        if (hand.stream().allMatch(i -> hand.stream().filter(j -> j.equals(i)).count() == 2)) {
+            System.out.println(t);
+            System.exit(0);
+        }
+        if (new HashSet<>(hand).equals(Set.of(1, 9, 11, 19, 21, 29, 100, 200, 300, 400, 500, 600, 700))) {
+            System.out.println(t);
+            System.exit(0);
+        }
+        List<Integer> pairs = new ArrayList<>();
+        List<Integer> triplets = new ArrayList<>();
+        for (int i : new HashSet<>(hand)) {
+            if (hand.stream().filter(j -> j.equals(i)).count() > 1) {
+                pairs.add(i);
+            }
+            if (hand.stream().filter(j -> j.equals(i)).count() > 2) {
+                triplets.add(i);
+            }
+        }
+        for (int pair : pairs) {
+            List<Integer> hand1 = new ArrayList<>(hand);
+            for (int j = 0; j < 2; j++) {
+                hand1.remove(Integer.valueOf(pair));
+            }
+            if (checkSeq(hand1)) {
+                System.out.println(t);
+                System.exit(0);
+            }
+            List<Integer> hand2 = new ArrayList<>(hand1);
+            for (int triplet : triplets) {
+                if (hand2.stream().filter(j -> j.equals(triplet)).count() < 3) {
+                    continue;
+                }
+                for (int j = 0; j < 3; j++) {
+                    hand2.remove(Integer.valueOf(triplet));
+                }
+                if (checkSeq(hand2)) {
+                    System.out.println(t);
+                    System.exit(0);
+                }
+            }
+        }
+        System.out.println(f);
+    }
+
+    public static boolean checkSeq(List<Integer> tiles) {
+        List<Integer> temp = new ArrayList<>(tiles);
+        while (!temp.isEmpty()) {
+            int a = temp.remove(0);
+            for (int i = 1; i <= 2; i++) {
+                if (!temp.contains(a + i)) {
+                    return false;
+                }
+                temp.remove(Integer.valueOf(a + i));
+            }
+        }
+        return true;
+    }
         }
 
         boolean res = false;
